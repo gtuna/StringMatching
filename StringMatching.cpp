@@ -8,8 +8,8 @@ using namespace std;
 enum class UserChoice {
 	EMODESOURCE,
 	EMODESEARCH,
-	EEXITMODE,
-	EINVALID
+	EMODEEXIT,
+	EMODEINVALID
 };
 
 class Game {
@@ -19,6 +19,7 @@ public:
 	Game();
 
 	bool isGameOver;
+	bool isSearchWordContainsWildCard;
 	UserChoice userChoice;
 	string sourceString;
 	string searchString;
@@ -48,10 +49,10 @@ void Game::BeginGame()
 
 Game::Game() {
 	isGameOver = false;
-	userChoice = UserChoice::EINVALID;
+	userChoice = UserChoice::EMODEINVALID;
 	sourceString = "";
 	searchString = "";
-
+	isSearchWordContainsWildCard = false;
 	BeginGame();
 
 }
@@ -126,12 +127,12 @@ void Game::ParseInput(string str)
 	else if (choice == "3")
 	{
 		isInputStrValid = true;
-		userChoice = UserChoice::EEXITMODE;
+		userChoice = UserChoice::EMODEEXIT;
 	}
 	else
 	{
 		isInputStrValid = true; //here is a little bit tricky, input string is valid, but user choice is invalid
-		userChoice = UserChoice::EINVALID;
+		userChoice = UserChoice::EMODEINVALID;
 	}
 
 	if (!isInputStrValid)
@@ -163,13 +164,13 @@ void Game::SetupGameParameters()
 		SearchForMatchingString();
 		break;
 	}
-	case UserChoice::EEXITMODE:
+	case UserChoice::EMODEEXIT:
 	{
 		cout << "See you!" << endl;
 		isGameOver = true;
 		break;
 	}
-	case UserChoice::EINVALID:
+	case UserChoice::EMODEINVALID:
 	{
 		cout << "Choice can be 1, 2 or 3! Try again.\n";
 		break;
