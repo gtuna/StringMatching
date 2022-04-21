@@ -14,25 +14,26 @@ enum class UserChoice {
 
 class Game {
 
-public:
-
-	Game();
-
-	bool isGameOver;
+private:
 	bool isSearchWordContainsWildCard;
 	UserChoice userChoice;
 	string sourceString;
 	string searchString;
+	bool gameOverStatus;
 
-	void BeginGame();
-	void SetupGameParameters();
-	void SearchForMatchingString();
 	bool isValidString(string str, bool isSource);
+	void SearchForMatchingString();
 	void ParseInput(string);
+	void SetupGameParameters();
+	bool isGameOver() const;
+	void BeginGame();
+
+public:
+
+	Game();
+	void Play();
 
 };
-
-
 
 
 void Game::BeginGame()
@@ -48,13 +49,13 @@ void Game::BeginGame()
 }
 
 Game::Game() {
-	isGameOver = false;
+	gameOverStatus = false;
 	userChoice = UserChoice::EMODEINVALID;
 	sourceString = "";
 	searchString = "";
 	isSearchWordContainsWildCard = false;
-	BeginGame();
 
+	BeginGame();
 }
 
 void Game::SearchForMatchingString()
@@ -64,6 +65,8 @@ void Game::SearchForMatchingString()
 
 
 	cout << "For the source word \"" << sourceString << "\" and search word \"" << searchString << "\"," << endl;
+
+	searchString = "";
 
 }
 
@@ -81,6 +84,7 @@ bool Game::isValidString(string str, bool isSource) {
 	{
 		if (i < 'a' || i > 'z') {
 			if (!isSource && i == '?') {
+				isSearchWordContainsWildCard = true;
 				continue;
 			}
 			else
@@ -109,6 +113,7 @@ void Game::ParseInput(string str)
 			isInputStrValid = true;
 			userChoice = UserChoice::EMODESOURCE;
 			sourceString = word;
+			searchString = "";
 		}
 	}
 	else if (choice == "2")
@@ -138,6 +143,12 @@ void Game::ParseInput(string str)
 	if (!isInputStrValid)
 	{
 		cout << "Wrong input format! Try again." << endl;
+		return;
+	}
+
+	if (isSearchWordContainsWildCard)
+	{
+
 	}
 
 }
@@ -167,7 +178,7 @@ void Game::SetupGameParameters()
 	case UserChoice::EMODEEXIT:
 	{
 		cout << "See you!" << endl;
-		isGameOver = true;
+		gameOverStatus = true;
 		break;
 	}
 	case UserChoice::EMODEINVALID:
@@ -180,18 +191,29 @@ void Game::SetupGameParameters()
 	}
 }
 
+bool Game::isGameOver() const
+{
+	return gameOverStatus;
+}
+
+void Game::Play()
+{
+	while (!isGameOver())
+	{
+		SetupGameParameters();
+	}
+}
 
 int main()
 {
-
 	Game game = Game();
 
+	game.Play();
+	//do
+	//{
+	//	game.SetupGameParameters();
 
-	do
-	{
-		game.SetupGameParameters();
-
-	} while (!game.isGameOver);
+	//} while (!game.isGameOver());
 
 	return 0;
 }
