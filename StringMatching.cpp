@@ -24,7 +24,7 @@ public:
 	string searchString;
 
 	void BeginGame();
-	void Setup();
+	void SetupGameParameters();
 	void SearchForMatchingString();
 	bool isValidString(string str, bool isSource);
 	void ParseInput(string);
@@ -32,21 +32,18 @@ public:
 };
 
 
-int main()
+
+
+void Game::BeginGame()
 {
-
-	Game game = Game();
-
-
-	do
-	{
-
-		game.Setup();
-		game.SearchForMatchingString();
-
-	} while (!game.isGameOver);
-
-	return 0;
+	cout << "This program searches a search string in a source string with the option of wildcards." << endl;
+	cout << endl;
+	cout << "Example inputs with their meaning in parentheses :" << endl;
+	cout << "1 thislectureisawesome(to enter a new source string)" << endl;
+	cout << "2 lecture(to enter a new search string)" << endl;
+	cout << "2 t?r? (to enter a search string with wildcards)" << endl;
+	cout << "3 (to exit the program)" << endl;
+	cout << endl;
 }
 
 Game::Game() {
@@ -66,7 +63,7 @@ void Game::SearchForMatchingString()
 
 
 	cout << "For the source word \"" << sourceString << "\" and search word \"" << searchString << "\"," << endl;
-	
+
 }
 
 bool Game::isValidString(string str, bool isSource) {
@@ -79,9 +76,10 @@ bool Game::isValidString(string str, bool isSource) {
 		return false;
 	}
 
-	for (int i = 0; i < str.length(); i++) {
-		if (str[i] < 'a' || str[i] > 'z') {
-			if (!isSource && str[i] == '?') {
+	for (char i : str)
+	{
+		if (i < 'a' || i > 'z') {
+			if (!isSource && i == '?') {
 				continue;
 			}
 			else
@@ -103,14 +101,17 @@ void Game::ParseInput(string str)
 	std::string choice = str.substr(0, str.find(delimiter)); // first part
 	std::string word = str.substr(str.find(delimiter) + 1); // second part
 
-	if (choice == "1") {
-		if (isValidString(word, true)) {
+	if (choice == "1")
+	{
+		if (isValidString(word, true))
+		{
 			isInputStrValid = true;
 			userChoice = UserChoice::EMODESOURCE;
 			sourceString = word;
 		}
 	}
-	else if (choice == "2") {
+	else if (choice == "2")
+	{
 
 		if (sourceString.length() != 0
 			&& sourceString.length() >= word.length()
@@ -122,11 +123,13 @@ void Game::ParseInput(string str)
 			searchString = word;
 		}
 	}
-	else if (choice == "3") {
+	else if (choice == "3")
+	{
 		isInputStrValid = true;
 		userChoice = UserChoice::EEXITMODE;
 	}
-	else {
+	else
+	{
 		isInputStrValid = true; //here is a little bit tricky, input string is valid, but user choice is invalid
 		userChoice = UserChoice::EINVALID;
 	}
@@ -138,7 +141,7 @@ void Game::ParseInput(string str)
 
 }
 
-void Game::Setup()
+void Game::SetupGameParameters()
 {
 	string input;
 
@@ -171,17 +174,23 @@ void Game::Setup()
 		cout << "Choice can be 1, 2 or 3! Try again.\n";
 		break;
 	}
+	default:
+		break;
 	}
 }
 
-void Game::BeginGame()
+
+int main()
 {
-	cout << "This program searches a search string in a source string with the option of wildcards." << endl;
-	cout << endl;
-	cout << "Example inputs with their meaning in parentheses :" << endl;
-	cout << "1 thislectureisawesome(to enter a new source string)" << endl;
-	cout << "2 lecture(to enter a new search string)" << endl;
-	cout << "2 t?r? (to enter a search string with wildcards)" << endl;
-	cout << "3 (to exit the program)" << endl;
-	cout << endl;
+
+	Game game = Game();
+
+
+	do
+	{
+		game.SetupGameParameters();
+
+	} while (!game.isGameOver);
+
+	return 0;
 }
