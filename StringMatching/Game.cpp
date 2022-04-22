@@ -36,10 +36,7 @@ Game::Game()
 
 void Game::SearchForMatchingString()
 {
-
-
-	std::regex re("(?=([a-z](i)[a-z]))."); // <-- PATTERN MODIFICATION
-
+	
 	regex_iterator<string::const_iterator> next = std::sregex_iterator(
 		sourceString.begin(),
 		sourceString.end(),
