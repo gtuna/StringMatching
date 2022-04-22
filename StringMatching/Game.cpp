@@ -43,8 +43,7 @@ void Game::SearchForMatchingString()
 		searchRegex);
 
 	std::sregex_iterator end;
-	auto words_end = std::sregex_iterator();
-	auto occurrenceCount = std::distance(next, words_end);
+	auto occurrenceCount = std::distance(next, end);
 
 	cout << "For the source word \"" << sourceString << "\" and search word \"" << searchString << "\",";
 
