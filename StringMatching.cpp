@@ -1,7 +1,9 @@
 // StringMatching.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+#include <algorithm>
 #include <iostream>
+#include <regex>
 #include <string>
 using namespace std;
 
@@ -9,24 +11,33 @@ enum class UserChoice {
 	EMODESOURCE,
 	EMODESEARCH,
 	EMODEEXIT,
-	EMODEINVALID
+	EMODEINVALID,
+	EMODENONE
 };
 
 class Game {
 
 private:
-	bool isSearchWordContainsWildCard;
+
 	UserChoice userChoice;
+
 	string sourceString;
 	string searchString;
-	bool gameOverStatus;
+	regex searchRegex;
 
+	bool gameOverStatus;
+	bool isSearchWordContainWildCard;
+
+	void BeginGame();
 	bool isValidString(string str, bool isSource);
 	void SearchForMatchingString();
 	void ParseInput(string);
 	void SetupGameParameters();
+	void CreateRegexFromSearchString();
+	void ResetSearchParameters();
+
 	bool isGameOver() const;
-	void BeginGame();
+	string ReplaceAll(std::string str, const std::string& from, const std::string& to) const;
 
 public:
 
@@ -48,12 +59,13 @@ void Game::BeginGame()
 	cout << endl;
 }
 
-Game::Game() {
+Game::Game()
+{
 	gameOverStatus = false;
-	userChoice = UserChoice::EMODEINVALID;
+	userChoice = UserChoice::EMODENONE;
 	sourceString = "";
-	searchString = "";
-	isSearchWordContainsWildCard = false;
+
+	ResetSearchParameters();
 
 	BeginGame();
 }
@@ -62,11 +74,75 @@ void Game::SearchForMatchingString()
 {
 
 
+	std::regex re("(?=([a-z](i)[a-z]))."); // <-- PATTERN MODIFICATION
+
+	regex_iterator<string::const_iterator> next = std::sregex_iterator(
+		sourceString.begin(),
+		sourceString.end(),
+		searchRegex);
+
+	std::sregex_iterator end;
+	auto words_end = std::sregex_iterator();
+	int occurrenceCount = std::distance(next, words_end);
+
+	cout << "For the source word \"" << sourceString << "\" and search word \"" << searchString << "\",";
 
 
-	cout << "For the source word \"" << sourceString << "\" and search word \"" << searchString << "\"," << endl;
+	if (occurrenceCount == 0)
+	{
+		cout << " no match has been found." << endl;
+	}
+	else
+	{
+		cout << endl;
+		while (next != end)
+		{
+			std::smatch match = *next;
+			std::cout << "\"" << match.str(1) << "\" has been found at index " << match.position() << '\n';
+			next++;
+		}
+	}
 
-	searchString = "";
+
+
+
+
+	/*
+
+
+	vector<int> index_matches; // result indexes saved here
+
+	for (auto it =match_results;
+		it != std::sregex_iterator();
+		++it)
+	{
+		index_matches.push_back(it->position());
+	}
+
+
+
+
+
+	if (occurrenceCount > 0)
+	{
+		std::cout << endl;
+		int index = 0;
+		for (std::sregex_iterator i = match_results; i != words_end; ++i) {
+
+			std::smatch match = *i;
+			std::string match_str = match.str();
+
+			std::cout << "\"" << match_str << "\" has been found at index " << index_matches[index] << '\n';
+
+			index++;
+		}
+	}
+	else
+	{
+
+	}
+	*/
+
 
 }
 
@@ -84,7 +160,7 @@ bool Game::isValidString(string str, bool isSource) {
 	{
 		if (i < 'a' || i > 'z') {
 			if (!isSource && i == '?') {
-				isSearchWordContainsWildCard = true;
+				isSearchWordContainWildCard = true;
 				continue;
 			}
 			else
@@ -113,12 +189,12 @@ void Game::ParseInput(string str)
 			isInputStrValid = true;
 			userChoice = UserChoice::EMODESOURCE;
 			sourceString = word;
-			searchString = "";
+			ResetSearchParameters();
 		}
 	}
 	else if (choice == "2")
 	{
-
+		isSearchWordContainWildCard = false;
 		if (sourceString.length() != 0
 			&& sourceString.length() >= word.length()
 			&& isValidString(word, false)
@@ -127,6 +203,7 @@ void Game::ParseInput(string str)
 			isInputStrValid = true;
 			userChoice = UserChoice::EMODESEARCH;
 			searchString = word;
+			CreateRegexFromSearchString();
 		}
 	}
 	else if (choice == "3")
@@ -146,11 +223,6 @@ void Game::ParseInput(string str)
 		return;
 	}
 
-	if (isSearchWordContainsWildCard)
-	{
-
-	}
-
 }
 
 void Game::SetupGameParameters()
@@ -159,6 +231,8 @@ void Game::SetupGameParameters()
 
 	cout << endl << "Enter your choice and string: ";
 	getline(cin, input);
+
+	userChoice = UserChoice::EMODENONE;
 
 	ParseInput(input);
 
@@ -173,6 +247,7 @@ void Game::SetupGameParameters()
 	case UserChoice::EMODESEARCH:
 	{
 		SearchForMatchingString();
+		ResetSearchParameters();
 		break;
 	}
 	case UserChoice::EMODEEXIT:
@@ -204,16 +279,55 @@ void Game::Play()
 	}
 }
 
+std::string Game::ReplaceAll(std::string str, const std::string& from, const std::string& to) const
+{
+	size_t start_pos = 0;
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+	}
+	return str;
+}
+
+void Game::CreateRegexFromSearchString()
+{
+	if (isSearchWordContainWildCard)
+	{
+		string temp = "";
+
+#pragma region PATTERN_MODIFICATION
+		// add pharantesis to all letters
+		for (char c : searchString)
+		{
+			temp += '(';
+			temp += c;
+			temp += ')';
+		}
+
+		// replace all '?' with '[a-z]'
+		temp = ReplaceAll(temp, "?", "[a-z]");
+		temp = "(?=(" + temp + ")).";
+#pragma endregion
+
+		searchRegex = regex(temp);
+	}
+	else
+	{
+		searchRegex = regex("(?=(" + searchString + ")).");
+	}
+}
+
+void Game::ResetSearchParameters()
+{
+	searchString = "";
+	searchRegex = regex("");
+	isSearchWordContainWildCard = false;
+}
+
 int main()
 {
 	Game game = Game();
-
 	game.Play();
-	//do
-	//{
-	//	game.SetupGameParameters();
-
-	//} while (!game.isGameOver());
 
 	return 0;
 }
